@@ -1,0 +1,192 @@
+{
+	"info": {
+		"_postman_id": "5bc3c30c-0190-4787-87d2-8af91026a3b5",
+		"name": "Automata",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Crear Token de Acceso",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "955cc73a-ba17-4431-9cc9-7e996a1db0a5",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains token\", function () {",
+							"    responseBody.has(\"access_token\");",
+							"});",
+							"",
+							"postman.setEnvironmentVariable(\"llave_acceso\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "183bb9ac-455a-431a-9ec2-47a6686766cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic {{client_id}}:{{client_secret}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"grant_type\" : \"client_credentials\",\n    \"identifier\": \"177694886\"\n}"
+				},
+				"url": {
+					"raw": "https://payments-wallet-qa.fif.tech/sso/oauth2/v2/token",
+					"protocol": "https",
+					"host": [
+						"payments-wallet-qa",
+						"fif",
+						"tech"
+					],
+					"path": [
+						"sso",
+						"oauth2",
+						"v2",
+						"token"
+					]
+				},
+				"description": "Paso para obtener token"
+			},
+			"response": []
+		},
+		{
+			"name": "Crear intención de Credito",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f9cd68e2-a925-4243-85eb-4f404a46975c",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 201\", function() {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Body contains token_ID\" + jsonData.id, function () {",
+							"    responseBody.has(\"id\");",
+							"});",
+							"",
+							"pm.test(\"Status is created\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.state).to.eql(\"created\");",
+							"});",
+							"",
+							"postman.setEnvironmentVariable(\"token_intencion\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{llave_acceso}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": " {\n  \"intent\": \"sale\",\n  \"payment_method\": \"WALLET_QR\",\n  \"payment_type\": \"CREDIT\",\n  \"payer\": {\n  \t\"email\": \"clark.kent.1@gmail.com\",\n    \"full_name\": \"Clark Kent\",\n    \"country\": \"CL\",\n    \"document_number\": \"177694886\",\n    \"document_type\": \"RUT\"\n  },\n  \"transaction\": {\n  \t\"unique_trx_id\":\"123456781\",\n  \t\"merchant_unique_id\":\"{{$guid}}\",\n  \t\"purchase_order\":\"1234567890\",\n    \"description\": \"Compra Falabella Ahumada\",\n    \"soft_descriptor\": \"WALLET-QR-PAYMENT\",\n    \"reconciliation_id\": \"101\",\n    \"invoice_type\": \"BOLETA\",\n    \"terminal_id\": \"101\",\n    \"store_id\": \"101\",\n    \"channel\": \"WEB\",\n    \"invoice_number\": \"15607881042363421\",\n    \"item_list\": {\n      \"shipping_method\": \"DIGITAL\",\n      \"items\": [\n        {\n          \"thumbnail\": \"http://notfound404.cl/some.jpg\",\n          \"sku\": \"TVLG43S\",\n          \"name\": \"TVLG43\",\n          \"description\": \"Tv LG 43\",\n          \"quantity\": 1,\n          \"price\": 3000,\n          \"tax\": 0,\n          \"_id\": \"5a7a14343df88b000fdac92a\"\n        },\n        {\n          \"thumbnail\": \"http://portal.test.peinau.fif.tech/bundles/app/css/images/e-commerce-demo/product-icon.png\",\n          \"sku\": \"DESCLIP\",\n          \"name\": \"Desc empleado\",\n          \"description\": \"Descuento Empleado\",\n          \"quantity\": 1,\n          \"price\": -1500,\n          \"tax\": 0,\n          \"_id\": \"5a7a14343df88b000fdac929\"\n        }\n      ],\n      \"shipping_address\": {\n        \"line1\": \"Dirección Sucursal Falabella Ahumada\",\n        \"city\": \"Santiago\",\n        \"country_code\": \"CL\",\n        \"phone\": \"+56 9 8762 1244\",\n        \"type\": \"HOME_OR_WORK\",\n        \"recipient_name\": \"Jhon Doe Son\"\n      }\n    },\n    \"amount\": {\n      \"currency\": \"CLP\",\n      \"total\": 1500,\n      \"details\": {\n        \"subtotal\": 1500,\n        \"tax\": 0,\n        \"shipping\": 0,\n        \"shipping_discount\": 0\n      }\n    }\n  },\n  \"additional_attributes\": {\n  },\n   \"redirect_urls\": {\n    \"return_url\": \"http://www.conntesol.org/wp-content/uploads/2018/03/PaymentSuccessful-1.png\",\n    \"cancel_url\": \"http://www.sclance.com/pngs/error-png/error_png_451017.jpg\"\n  }\n}"
+				},
+				"url": {
+					"raw": "https://payments-wallet-qa.fif.tech/checkout/payments",
+					"protocol": "https",
+					"host": [
+						"payments-wallet-qa",
+						"fif",
+						"tech"
+					],
+					"path": [
+						"checkout",
+						"payments"
+					]
+				},
+				"description": "Creación llave de pago"
+			},
+			"response": []
+		},
+		{
+			"name": "Imagen_QR",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b777d34d-2a1b-43cb-9bc2-faebd03c6f7a",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{llave_acceso}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://payments-wallet-qa.fif.tech/checkout/payments/gateways/wallet/qr/{{token_intencion}}/qr",
+					"protocol": "https",
+					"host": [
+						"payments-wallet-qa",
+						"fif",
+						"tech"
+					],
+					"path": [
+						"checkout",
+						"payments",
+						"gateways",
+						"wallet",
+						"qr",
+						"{{token_intencion}}",
+						"qr"
+					]
+				},
+				"description": "Visualización código QR"
+			},
+			"response": []
+		}
+	]
+}
